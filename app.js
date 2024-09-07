@@ -1,114 +1,106 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const scoreElement = document.getElementById("strk");
+    const scoreElement = document.getElementById("score");
     const imageContainer = document.getElementById("imageContainer");
     const clickImage = document.getElementById("clickImage");
     const progressBarFill = document.getElementById("progressBarFill");
-    const energyElement = document.getElementById("energy");
-
-    let tg = window.Telegram.WebApp;
-    tg.expand()
   
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+
+	clickImage.style.transform = "scale(0.95)";
+    document.addEventListener('contextmenu', function (event) {
+        event.preventDefault();
+    });
 
     let score = parseFloat(localStorage.getItem("strk")) || 5.00;
-	let scoreElement = document.getElementById("strk");
-
-	scoreElement.textContent = `STRK: ${score.toFixed(2)}`;
-    let clicksRemaining = 50; 
-    let isEnergyFull = false;
-    let recoveryStartTime = localStorage.getItem('recoveryStartTime') ? parseInt(localStorage.getItem('recoveryStartTime')) : 0;
-
-    clickImage.style.transform = "scale(0.75)";
-    energyElement.style.display = "none";
 
     
-    scoreElement.textContent = score.toFixed(2);
-    progressBarFill.style.width = (score % 100) + "%";
+    function updateScoreDisplay() {
+        scoreElement.textContent = `STRK: ${score.toFixed(2)}$`;
+        progressBarFill.style.width = (score / 5.00) * 100 + "%";
+    }
 
-    function increaseScore(x, y) {
-        if (isEnergyFull) return;
+    
+    updateScoreDisplay();
+	
+		
 
-        
-        clicksRemaining--;
-
-        if (clicksRemaining <= 0) {
-            startRecovery();
-            return;
+    function decreaseScore(x, y) {
+        if (score > 0.00) {
+            score -= 0.01;
+            localStorage.setItem("strk", score.toFixed(2)); // Сохранение в localStorage
+            updateScoreDisplay();
+            createFlyingText(x, y);
         }
 
-
-        let progress = (score % 100) / 100;
-        progressBarFill.style.width = progress * 100 + "%";
-
-        
-        clickImage.style.transform = "scale(0.8)";
+        if (score <= 0.00) {
+            score = 0.00;
+            startRecovery();
+        }
+		
+		clickImage.style.transform = "scale(1)";
         setTimeout(() => {
-            clickImage.style.transform = "scale(0.75)";
+            clickImage.style.transform = "scale(0.95)";
         }, 100);
 
         createFlyingScore(x, y);
     }
 
-    function createFlyingScore(x, y) {
-        const flyingScore = document.createElement("div");
-        flyingScore.className = "flying-score";
-        flyingScore.textContent = "DEV 🤡 Sell";
+    function createFlyingText(x, y) {
+        const flyingText = document.createElement("div");
+        flyingText.className = "flying-text";
+        flyingText.textContent = "Dev🤡Sell";
 
-        const offsetX = 100;
-        const offsetY = 100;
-        flyingScore.style.left = x - imageContainer.getBoundingClientRect().left - offsetX + "px";
-        flyingScore.style.top = y - imageContainer.getBoundingClientRect().top - offsetY + "px";
+        
+        const offsetX = 50;
+        const offsetY = 50;
+        flyingText.style.left = x - imageContainer.getBoundingClientRect().left - offsetX + "px";
+        flyingText.style.top = y - imageContainer.getBoundingClientRect().top - offsetY + "px";
 
-        imageContainer.appendChild(flyingScore);
+        imageContainer.appendChild(flyingText);
 
+        
         setTimeout(() => {
-            flyingScore.remove();
-        }, 100);
+            flyingText.remove();
+        }, 1000);
     }
-
+	
     function startRecovery() {
-        isEnergyFull = true;
-        recoveryStartTime = Date.now();
-        localStorage.setItem('recoveryStartTime', recoveryStartTime);
-        energyElement.style.display = "block";
-        updateEnergyDisplay();
-    }
+        const recoveryRatePerDay = 0.30;
+        const recoveryInterval = 24 * 60 * 60 * 1000; // 24 часа в миллисекундах
 
-    function updateEnergyDisplay() {
-        const recoveryEndTime = recoveryStartTime + (1 * 60 * 60 * 1000);
-        const remainingTime = Math.max(0, recoveryEndTime - Date.now());
+        let lastRecoveryTime = localStorage.getItem('lastRecoveryTime') ? parseInt(localStorage.getItem('lastRecoveryTime')) : Date.now();
+        
+        const recovery = setInterval(() => {
+            const now = Date.now();
+            const elapsed = now - lastRecoveryTime;
+            const recoveryAmount = (elapsed / recoveryInterval) * recoveryRatePerDay;
 
-        if (remainingTime > 0) {
-            energyElement.textContent = `Recovery in progress: ${formatTime(remainingTime)}`;
-            setTimeout(updateEnergyDisplay, 1000);
-        } else {
-            
-            isEnergyFull = false;
-            clicksRemaining = 50;
-            energyElement.style.display = "none";
-        }
-    }
+            if (score < 5.00) {
+                score += recoveryAmount;
+                if (score > 5.00) score = 5.00;
 
-    function formatTime(ms) {
-        const hours = Math.floor(ms / (1000 * 60 * 60));
-        const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((ms % (1000 * 60)) / 1000);
-        return `${hours}h ${minutes}m ${seconds}s`;
+                localStorage.setItem('lastRecoveryTime', now);
+                updateScoreDisplay();
+            } else {
+                clearInterval(recovery); // Останавливаем восстановление при достижении 5.00
+            }
+        }, 1000); // Проверяем каждые 1 секунду
     }
 
     function handleTouchStart(event) {
         event.preventDefault();
-
         for (let i = 0; i < event.changedTouches.length; i++) {
             const touch = event.changedTouches[i];
-            increaseScore(touch.clientX, touch.clientY);
+            decreaseScore(touch.clientX, touch.clientY);
         }
     }
 
     function handleClick(event) {
-        increaseScore(event.clientX, event.clientY);
+        decreaseScore(event.clientX, event.clientY);
     }
 
-    
+    // Добавляем события клика и касания
     if ('ontouchstart' in window) {
         imageContainer.addEventListener("touchstart", handleTouchStart);
     } else {
