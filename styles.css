@@ -57,7 +57,7 @@ body {
 }
 
 #clickImage {
-  width: 150px; 
+  width: 250px; 
   transition: transform 0.3s ease;
   cursor: pointer;
 }
