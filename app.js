@@ -10,11 +10,14 @@ document.addEventListener("DOMContentLoaded", function () {
   
 
     let score = parseFloat(localStorage.getItem("strk")) || 5.00;
+	let scoreElement = document.getElementById("strk");
+
+	scoreElement.textContent = `STRK: ${score.toFixed(2)}`;
     let clicksRemaining = 50; 
     let isEnergyFull = false;
     let recoveryStartTime = localStorage.getItem('recoveryStartTime') ? parseInt(localStorage.getItem('recoveryStartTime')) : 0;
 
-    clickImage.style.transform = "scale(0.45)";
+    clickImage.style.transform = "scale(0.75)";
     energyElement.style.display = "none";
 
     
@@ -37,9 +40,9 @@ document.addEventListener("DOMContentLoaded", function () {
         progressBarFill.style.width = progress * 100 + "%";
 
         
-        clickImage.style.transform = "scale(0.5)";
+        clickImage.style.transform = "scale(0.8)";
         setTimeout(() => {
-            clickImage.style.transform = "scale(0.45)";
+            clickImage.style.transform = "scale(0.75)";
         }, 100);
 
         createFlyingScore(x, y);
@@ -59,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         setTimeout(() => {
             flyingScore.remove();
-        }, 600);
+        }, 100);
     }
 
     function startRecovery() {
