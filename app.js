@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let tg = window.Telegram.WebApp;
     tg.expand();
 
-	clickImage.style.transform = "scale(0.95)";
+	clickImage.style.transform = "scale(0.9)";
     document.addEventListener('contextmenu', function (event) {
         event.preventDefault();
     });
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		
 		clickImage.style.transform = "scale(1)";
         setTimeout(() => {
-            clickImage.style.transform = "scale(0.95)";
+            clickImage.style.transform = "scale(0.9)";
         }, 100);
 
         createFlyingScore(x, y);
